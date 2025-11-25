@@ -79,6 +79,12 @@ def create_faker():
 	faker.add_provider(StarProvider())
 	return faker
 
+
+def create_token():
+	token = faker.xkcd_password()
+	return token
+
+
 faker = create_faker()
 # Add method for xkcd password
 # import & try from REPL
