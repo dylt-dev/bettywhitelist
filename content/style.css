@@ -1,0 +1,78 @@
+.badTitle {
+	border: 1px solid pink;
+	font-size: 2.5rem;
+	padding: 1rem;
+}
+
+.errorCheckbox {
+	display: none;
+
+}
+
+.errorDetail {
+	visibility: hidden;
+
+	div {
+		padding: 0.5rem 0;
+	}
+}
+
+.errorImage > img {
+	width: 250px;
+}
+
+.errorLabel {
+	align-self: center;
+}
+
+.errorInfo {
+	display: flex;
+	flex-direction: column;
+	align-items: start;
+	justify-content: flex-start;
+	gap: 1rem;
+}
+
+.errorInfo * {
+	border: 0px solid gray;
+}
+
+.errorMessage {
+	font-family: monospace;
+	font-size: 2.0rem;
+}
+
+.errorMessage404 {
+	font-family: fantasy;
+	font-size: 1.5rem;
+}
+
+.errorTitle {
+	font-size: 3rem;
+}
+
+.errorTitle404 {
+	font-size: 1rem;
+}
+
+.errorTitle404InitialLetter {
+	font-size: 3rem;
+}
+
+.errorTrace {
+	font-family: monospace;
+	font-size: 1.1rem;
+	line-height: 1.8rem;
+	white-space: pre;
+}
+
+.flexVertCenter {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 3rem;
+}
+
+input[type='checkbox']:checked ~ .errorDetail {
+	visibility: visible;
+}

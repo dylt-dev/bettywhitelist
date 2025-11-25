@@ -1,81 +1,14 @@
 <html>
     <head>
-        <style>
-        .badTitle {
-            border: 1px solid pink;
-            font-size: 2.5rem;
-            padding: 1rem;
-        }
-
-        .errorCheckbox {
-            display: none;
-
-        }
-
-        .errorDetail {
-            visibility: hidden;
-
-            div {
-               padding: 0.5rem 0;
-            }
-        }
-
-        .errorImage {
-        }
-
-        .errorImage > img {
-            width: 250px;
-        }
-
-        .errorLabel {
-            align-self: center;
-        }
-
-        .errorInfo {
-            display: flex;
-            flex-direction: column;
-            align-items: start;
-            justify-content: flex-start;
-            gap: 1rem;
-        }
-
-        .errorInfo * {
-            border: 0px solid gray;
-        }
-        
-        .errorMessage {
-            font-family: monospace;
-            font-size: 2.0rem;
-        }
-
-        .errorTitle {
-            font-size: 3rem;
-        }
-
-        .errorTrace {
-            font-family: monospace;
-            font-size: 1.1rem;
-            line-height: 1.8rem;
-            white-space: pre;
-        }
-
-        .flexVertCenter {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3rem;
-        }
-
-        input[type='checkbox']:checked ~ .errorDetail {
-            visibility: visible;
-        }
-        </style>
-        <title>bwl - ohno</title>
+		<link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+		<link rel='stylesheet' href='/style.css'>
+        <title>bwl - oh dear</title>
     </head>
     <body>
         <div class='flexVertCenter'>
             <div class='errorTitle'>
-            oh no!
+            oh dear!
             </div>
             <div class='errorImage'>
                 <img src='/img/500.jpg'/>

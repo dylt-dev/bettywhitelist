@@ -1,22 +1,20 @@
-import pyodbc
-import urllib.parse
+from datetime import datetime
 
-driver = pyodbc.drivers()[-1]
-host='db.bettywhitelist.com'
-db='bwl'
-username='admin'
-password='cheese-viaduct-batt-sodium'
-connString=f"Driver={{{driver}}}; Server={host}; Database={db}; UID={username}; PWD={password};"
-conn = pyodbc.connect(connString)
-cursor = conn.cursor()
-sql = "SELECT name, created_on FROM star ORDER BY created_on"
-cursor.execute(sql)
+with open("/tmp/bwl.log", "a") as log:
+   import sys
+   print(sys.path, file=log)
+   print(file=log)
+    # print(f'dbznutz.__file__={dbznutz.__file__}', file=log)
+    # print(dir(dbznutz), file=log)
+   
+import dbznutz 
 d = []
-rs = cursor.fetchall()
-for row in rs:
+(conn, cur) = dbznutz.connect()
+with conn:
+    stars = dbznutz.get_stars(cur)
+for star in stars:
     o = {}
-    o['name'] = row.name
-    o['created_on'] = row.created_on
-    d.append(row)
-
-conn.close()
+    o['name'] = star.name
+    # o['created_on'] = datetime.strptime(star.createdOn, "%b %d %Y %-I:%M %p")
+    o['created_on'] = datetime.fromisoformat(star.createdOn)
+    d.append(o)
