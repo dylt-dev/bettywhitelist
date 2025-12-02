@@ -1,2 +1,2 @@
-name=http.args['name']
-token=http.args['token']
+name=http.args['name'] # pyright: ignore[reportUndefinedVariable]
+token=http.args['token'] # pyright: ignore[reportUndefinedVariable]
