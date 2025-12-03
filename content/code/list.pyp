@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
