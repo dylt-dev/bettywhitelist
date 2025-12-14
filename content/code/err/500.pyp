@@ -13,15 +13,13 @@
             <div class='errorImage'>
                 <img src='/img/500.jpg'/>
             </div>
-            <div class='errorInfo'>
-                    <label class='errorLabel' for="chkErrorMessage">ugly truth</label>
-                    <input class='errorCheckbox' type='checkbox' id='chkErrorMessage'/>
-                    <div class='errorDetail'> <div class='errorMessage'> {{- message }} </div>
-                        <div class='errorTrace'>
-                            {{- traceback }}
-                        </div>
-                    </div>
-            </div>
-        <div>
+            
+            <details class='errorDetails'>
+                <summary class='errorMessage' autofocus>{{- message }}</summary>
+                <div class='errorTrace'>
+                    {{- traceback }}
+                </div>
+            </details>
+        </div>
     </body>
 </html>

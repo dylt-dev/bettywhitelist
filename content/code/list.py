@@ -1,13 +1,19 @@
 from datetime import datetime
 import dbznutz 
 
+raise Exception("oopsie")
+
 d = []
 (conn, cur) = dbznutz.connect()
 with conn:
-    stars = dbznutz.get_stars(cur)
-for star in stars:
+    starClaims = dbznutz.get_star_claims(cur)
+for starClaim in starClaims:
     o = {}
-    o['name'] = star.name
-    # o['created_on'] = datetime.strptime(star.createdOn, "%b %d %Y %-I:%M %p")
-    o['created_on'] = datetime.fromisoformat(star.createdOn)
+    o['idStar'] = starClaim.idStar
+    o['idClaim'] = starClaim.idClaim
+    o['name'] = starClaim.name
+    o['email'] = starClaim.email
+    o['token'] = starClaim.token
+    o['star_created_on'] = datetime.fromisoformat(starClaim.starCreatedOn)
+    o['claim_created_on'] = starClaim.claimCreatedOn
     d.append(o)

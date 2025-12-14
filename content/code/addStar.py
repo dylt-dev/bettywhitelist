@@ -31,4 +31,4 @@ with conn:
 # redirect(f'{scheme}://{host}/thankyou.pyp')
 nameParam = urllib.parse.quote_plus(name)
 tokenParam = urllib.parse.quote_plus(token)
-http.resp.redirect(f'thankyou?name={nameParam}&token={tokenParam}') # pyright: ignore[reportUndefinedVariable]
+http.redirect(f'thankyou?name={nameParam}&token={tokenParam}') # pyright: ignore[reportUndefinedVariable]

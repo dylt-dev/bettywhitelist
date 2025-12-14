@@ -1,3 +1,27 @@
+body {
+	margin: auto;
+	margin-top: 1em;
+	width: 60vw;
+	font: 1.5rem sans-serif;
+}
+
+header ul {
+	list-style-type: none;
+	padding-left: 0;
+}
+
+header ul li {
+	display: inline-block;
+	font-size: 0.8rem;
+	padding-right: 5rem;
+}
+
+table.object-detail {
+	background-color: bisque;
+	border-collapse: separate;
+	border-spacing: 1em;
+}
+
 .badTitle {
 	border: 1px solid pink;
 	font-size: 2.5rem;
@@ -17,12 +41,14 @@
 	}
 }
 
-.errorImage > img {
-	width: 250px;
+.errorDetails {
+	div {
+		padding: 0.5rem 0;
+	}
 }
 
-.errorLabel {
-	align-self: center;
+.errorImage > img {
+	width: 250px;
 }
 
 .errorInfo {
@@ -37,9 +63,41 @@
 	border: 0px solid gray;
 }
 
+.errorLabel {
+	align-self: center;
+	padding: 0.5rem;
+}
+
 .errorMessage {
+	background: pink;
+	border-radius: 0.75rem;
 	font-family: monospace;
 	font-size: 2.0rem;
+	text-align: center;
+	padding: 0.5rem;
+	position: relative;
+}
+
+.errorMessage:focus {
+	background: pink;
+	border: 0;
+	border-radius: 0.75rem;
+	font-family: monospace;
+	font-size: 2.0rem;
+	text-align: center;
+	outline: none;
+	padding: 0.5rem;
+	position: relative;
+
+	&::after {
+		background: pink;
+		content: '';
+		filter: blur(0.5rem);
+		border-radius: inherit;
+		inset: -0.5rem;
+		position: absolute;
+		z-index: -5;
+	}
 }
 
 .errorMessage404 {
