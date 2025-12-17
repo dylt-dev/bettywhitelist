@@ -8,7 +8,15 @@ class Tests(unittest.TestCase):
 		self.assertIsNotNone(conn)
 		self.assertIsNotNone(cur)
 
-	def test_list_star_claims(self):
+	def test_get_star(self):
+		idStar = 6
+		(conn, cur) = dbznutz.connect()
+		with conn:
+			star = dbznutz.Star.get(cur, idStar)
+			self.assertIsNotNone(star)
+			self.assertEqual(idStar, star.id)
+
+	def test_get_star_claims(self):
 		(conn, cur) = connect(self)
 		with conn:
 			rows = dbznutz.StarClaim.get_all(cur)
@@ -38,6 +46,14 @@ class Tests(unittest.TestCase):
 		starClaim = starClaims[0]
 		self.assertIsNotNone(starClaim)
 		self.assertEqual(idStar, starClaim.idStar)
+
+	def test_get_stars(self):
+		(conn, cur) = connect(self)
+		with conn:
+			rows = dbznutz.Star.get_all(cur)
+			nRows = get_row_count(self, cur, 'star')
+		self.assertIsNotNone(rows)
+		self.assertEqual(nRows, len(rows))
 
 	# Not a test
 	def add_star(self):
@@ -118,9 +134,9 @@ class Tests(unittest.TestCase):
 	# Not a test
 	def get_star_count(self):
 		print()
-		(conn, cur) = connect()
+		(conn, cur) = connect(self)
 		with conn:
-			n = dbznutz.get_star_count(cur)
+			n = dbznutz.Star.get_count(cur)
 		print(f'{n} row(s)')
 
 	# Not a test
@@ -137,7 +153,7 @@ class Tests(unittest.TestCase):
 		print()
 		(conn, cur) = connect()
 		with conn:
-			rows = dbznutz.get_stars(cur)
+			rows = dbznutz.Star.get_all(cur)
 		for row in rows:
 			print(row)
 			
@@ -159,7 +175,7 @@ def drop_table(t, cur, tableName):
 	cur.execute(sql)
 
 def get_row_count(t, cur, tableName):
-	sql = f'SELECT COUNT(*) as n from `{tableName}`'
+	sql = f'SELECT COUNT(*) as n from {tableName}'
 	cur.execute(sql)
 	row = cur.fetchone()
 	t.assertIsNotNone(row)
