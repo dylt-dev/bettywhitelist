@@ -2,11 +2,42 @@ import sqlite3
 import unittest
 from content.code import dbznutz
 
-class DbTests(unittest.TestCase):
+class Tests(unittest.TestCase):
 	def test_connect(self):
 		(conn, cur) = dbznutz.connect()
 		self.assertIsNotNone(conn)
 		self.assertIsNotNone(cur)
+
+	def test_list_star_claims(self):
+		(conn, cur) = connect(self)
+		with conn:
+			rows = dbznutz.StarClaim.get_all(cur)
+			nRows = get_row_count(self, cur, 'v_star_claim')
+		self.assertIsNotNone(rows)
+		self.assertEqual(nRows, len(rows))
+
+	def test_get_star_claims_by_claim_code(self):
+		claimCode = "bazooka-override-apostle-suction"
+		idStar = 6
+		(conn, cur) = dbznutz.connect()
+		with conn:
+			starClaims = dbznutz.StarClaim.get_by_claim_code(cur, claimCode)
+		self.assertIsNotNone(starClaims)
+		self.assertEqual(1, len(starClaims))
+		starClaim = starClaims[0]
+		self.assertIsNotNone(starClaim)
+		self.assertEqual(idStar, starClaim.idStar)
+
+	def test_get_star_claims_by_star(self):
+		idStar = 6
+		(conn, cur) = dbznutz.connect()
+		with conn:
+			starClaims = dbznutz.StarClaim.get_by_star(cur, idStar)
+		self.assertIsNotNone(starClaims)
+		self.assertEqual(1, len(starClaims))
+		starClaim = starClaims[0]
+		self.assertIsNotNone(starClaim)
+		self.assertEqual(idStar, starClaim.idStar)
 
 	# Not a test
 	def add_star(self):
@@ -97,7 +128,7 @@ class DbTests(unittest.TestCase):
 		print()
 		(conn, cur) = connect(self)
 		with conn:
-			rows = dbznutz.get_star_claims(cur)
+			rows = dbznutz.StarClaim.get_all(cur)
 		for row in rows:
 			print(row)
 
@@ -126,3 +157,11 @@ def create_star(t) -> dbznutz.Star:
 def drop_table(t, cur, tableName):
 	sql = f"DROP TABLE IF EXISTS `{tableName}`"
 	cur.execute(sql)
+
+def get_row_count(t, cur, tableName):
+	sql = f'SELECT COUNT(*) as n from `{tableName}`'
+	cur.execute(sql)
+	row = cur.fetchone()
+	t.assertIsNotNone(row)
+	(nRows, ) = row
+	return nRows

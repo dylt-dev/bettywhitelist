@@ -28,12 +28,36 @@ class StarClaim:
 	starCreatedOn: datetime
 	claimCreatedOn: datetime
 
+	COL_LIST = '[id_star], [id_claim], [name], [token], [email], [star_created_on], [claim_created_on]'
+	TABLE_NAME = 'v_star_claim'
+	@property
+	def isClaimed (self): return not not self.claimCreatedOn
+
 	@classmethod
-	def from_row(cls, row):
+	def from_row(cls, row) -> "StarClaim":
 		(idStar, idClaim, name, token, email, star_created_on, claim_created_on) = row
 		starClaim = StarClaim(idStar=idStar, idClaim=idClaim, name=name, token=token, email=email, starCreatedOn=star_created_on, claimCreatedOn=claim_created_on)
 		return starClaim
-		
+	
+	@classmethod
+	def get_all(cls, cur):
+		sql = f'SELECT {cls.COL_LIST} FROM "{cls.TABLE_NAME}"'
+		data = get_rows(cur, cls, sql)	
+		return data	
+
+	@classmethod
+	def get_by_claim_code(cls, cur, claimCode) -> list["StarClaim"]:
+		sql = f'SELECT {cls.COL_LIST} FROM v_star_claim WHERE token=:claimCode' 
+		params = { 'claimCode': claimCode }
+		data = get_rows(cur, cls, sql, params)
+		return data
+
+	@classmethod
+	def get_by_star(cls, cur, idStar) -> list["StarClaim"]:
+		sql = f'SELECT {cls.COL_LIST} FROM "{cls.TABLE_NAME}" WHERE id_star=:idStar'
+		params = {"idStar": idStar}
+		data = get_rows(cur, cls, sql, params)
+		return data
 
 
 def add_star(cur, star: Star):
@@ -78,6 +102,18 @@ def connect():
 	return (conn, cur)
 
 
+def get_list(cur, sql, params, fn):
+	data = []
+	cur.execute(sql, params)
+	while True:
+		row = cur.fetchone()
+		if not row:
+			break
+		o = fn(row)
+		data.append(o)
+	return data
+
+
 def get_now():
 	now = datetime.now(UTC)
 	return now
@@ -102,32 +138,6 @@ def get_star_count(cur):
 	return n
 
 
-def get_star_claim(cur, idStar):
-	sql = '''
-	SELECT id_star, id_claim, name, token, email, star_created_on, claim_created_on
-	FROM `v_star_claim`
-	WHERE id_star=:idStar
-	'''
-	params = {"idStar": idStar}
-	cur.execute(sql, params)
-	row = cur.fetchone()
-	if not row:
-		return None
-	starClaim = StarClaim.from_row(row)
-	return starClaim
-
-
-def get_star_claims(cur):
-	data = []
-	sql = 'SELECT id_star, id_claim, name, token, email, star_created_on, claim_created_on from v_star_claim'
-	cur.execute(sql)
-	while True:
-		row = cur.fetchone()
-		if not row:
-			break
-		starClaim = StarClaim.from_row(row)
-		data.append(starClaim)
-	return data	
 
 
 def get_stars(cur):
@@ -170,6 +180,17 @@ def create_faker():
 def create_token():
 	token = faker.xkcd_password()
 	return token
+
+def get_rows(cur, cls, sql, params={}):
+	data = []
+	cur.execute(sql, params)
+	while True:
+		row = cur.fetchone()
+		if not row:
+			break
+		o = cls.from_row(row)
+		data.append(o)
+	return data
 
 
 faker = create_faker()

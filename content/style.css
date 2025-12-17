@@ -1,20 +1,57 @@
+:root {
+	--font: 1.5rem sans-serif;
+	--font-size: 1.5rem;
+	--font-family: 'sans-serif';
+}
+
 body {
 	margin: auto;
 	margin-top: 1em;
 	width: 60vw;
-	font: 1.5rem sans-serif;
+	font: var(--font);
 }
 
-header ul {
+form.claimCodeForm {
+	margin-top: 2rem;
+
+	input {
+		font-size: 1.5rem;
+		padding: 0.50rem;
+	}
+}
+
+header.nav ul {
 	list-style-type: none;
+	margin-bottom: 2.5rem;
+	margin-top: 0.25rem;
 	padding-left: 0;
 }
 
-header ul li {
+header.nav ul li {
 	display: inline-block;
 	font-size: 0.8rem;
 	padding-right: 5rem;
 }
+
+input.claimCode {
+	width: 50rem;
+}
+
+ol.punchlist > li {
+	margin-bottom: 1rem;
+
+	>details {
+		> summary {
+			margin-bottom: 0.5rem;
+		}
+	}
+}
+
+p.code {
+	font-family: monospace;
+}
+
+
 
 table.object-detail {
 	background-color: bisque;
@@ -133,4 +170,10 @@ table.object-detail {
 
 input[type='checkbox']:checked ~ .errorDetail {
 	visibility: visible;
+}
+
+#theList {
+	th {
+		text-align: left;
+	}
 }

@@ -9,12 +9,12 @@
 		<title>The BWL - {% block title %}{% endblock %}</title>
 	</head>
 	<body>
-        <header>
+        <header class='nav'>
             <div class='title'>The Betty White List</div>
             <ul>
                 <li><a href='/'>Home</a></li>
-                <li><a href='/list'>The List</a></li>
-                <li><a href='/claim'>Claim a Star</a></li>
+                <li><a href='/code/list'>The List</a></li>
+                <li><a href='/code/claim'>Claim a Star</a></li>
             </ul>
         </header>
         {% block content %}{% endblock %}

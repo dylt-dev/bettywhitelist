@@ -1,8 +1,6 @@
 from datetime import datetime
 import dbznutz 
 
-raise Exception("oopsie")
-
 d = []
 (conn, cur) = dbznutz.connect()
 with conn:
