@@ -4,7 +4,7 @@ import werkzeug
 from splunge import app
 
 
-class EndToEndTests(unittest.TestCase):
+class Tests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.chdir('./content')
@@ -21,6 +21,8 @@ class EndToEndTests(unittest.TestCase):
     def test_nowwhat_md(self):
         test_get(self, "/now-what.md", contentType="text/markdown")
 
+    def test_star(self):
+        test_get(self, "/code/star?id=1", contentType="text/markdown")
 
 def test_get(t: unittest.TestCase, url: str, *, contentType=None):
     cli = werkzeug.Client(app.app)

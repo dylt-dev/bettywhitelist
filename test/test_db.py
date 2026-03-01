@@ -1,25 +1,27 @@
 import sqlite3
 import unittest
-from content.code import dbznutz
+from content.code import db
+from content.code.db.Star import Star
+from content.code.db.StarClaim import StarClaim
 
 class Tests(unittest.TestCase):
 	def test_connect(self):
-		(conn, cur) = dbznutz.connect()
+		(conn, cur) = db.connect()
 		self.assertIsNotNone(conn)
 		self.assertIsNotNone(cur)
 
 	def test_get_star(self):
 		idStar = 6
-		(conn, cur) = dbznutz.connect()
+		(conn, cur) = db.connect()
 		with conn:
-			star = dbznutz.Star.get(cur, idStar)
+			star = Star.get(cur, idStar)
 			self.assertIsNotNone(star)
 			self.assertEqual(idStar, star.id)
 
 	def test_get_star_claims(self):
 		(conn, cur) = connect(self)
 		with conn:
-			rows = dbznutz.StarClaim.get_all(cur)
+			rows = StarClaim.get_all(cur)
 			nRows = get_row_count(self, cur, 'v_star_claim')
 		self.assertIsNotNone(rows)
 		self.assertEqual(nRows, len(rows))
@@ -27,9 +29,9 @@ class Tests(unittest.TestCase):
 	def test_get_star_claims_by_claim_code(self):
 		claimCode = "bazooka-override-apostle-suction"
 		idStar = 6
-		(conn, cur) = dbznutz.connect()
+		(conn, cur) = db.connect()
 		with conn:
-			starClaims = dbznutz.StarClaim.get_by_claim_code(cur, claimCode)
+			starClaims = StarClaim.get_by_claim_code(cur, claimCode)
 		self.assertIsNotNone(starClaims)
 		self.assertEqual(1, len(starClaims))
 		starClaim = starClaims[0]
@@ -38,9 +40,9 @@ class Tests(unittest.TestCase):
 
 	def test_get_star_claims_by_star(self):
 		idStar = 6
-		(conn, cur) = dbznutz.connect()
+		(conn, cur) = db.connect()
 		with conn:
-			starClaims = dbznutz.StarClaim.get_by_star(cur, idStar)
+			starClaims = StarClaim.get_by_star(cur, idStar)
 		self.assertIsNotNone(starClaims)
 		self.assertEqual(1, len(starClaims))
 		starClaim = starClaims[0]
@@ -50,7 +52,7 @@ class Tests(unittest.TestCase):
 	def test_get_stars(self):
 		(conn, cur) = connect(self)
 		with conn:
-			rows = dbznutz.Star.get_all(cur)
+			rows = Star.get_all(cur)
 			nRows = get_row_count(self, cur, 'star')
 		self.assertIsNotNone(rows)
 		self.assertEqual(nRows, len(rows))
@@ -60,7 +62,7 @@ class Tests(unittest.TestCase):
 		(conn, cur) = connect()
 		star = create_star(self)
 		with conn:
-			dbznutz.add_star(cur, star)
+			db.add_star(cur, star)
 		self.assertEqual(1, cur.rowcount)
 
 	# Not a test
@@ -136,7 +138,7 @@ class Tests(unittest.TestCase):
 		print()
 		(conn, cur) = connect(self)
 		with conn:
-			n = dbznutz.Star.get_count(cur)
+			n = Star.get_count(cur)
 		print(f'{n} row(s)')
 
 	# Not a test
@@ -144,7 +146,7 @@ class Tests(unittest.TestCase):
 		print()
 		(conn, cur) = connect(self)
 		with conn:
-			rows = dbznutz.StarClaim.get_all(cur)
+			rows = StarClaim.get_all(cur)
 		for row in rows:
 			print(row)
 
@@ -153,21 +155,21 @@ class Tests(unittest.TestCase):
 		print()
 		(conn, cur) = connect()
 		with conn:
-			rows = dbznutz.Star.get_all(cur)
+			rows = Star.get_all(cur)
 		for row in rows:
 			print(row)
 			
 
 
 def connect(t):
-	(conn, cur) = dbznutz.connect()
+	(conn, cur) = db.connect()
 	t.assertIsNotNone(conn)
 	t.assertIsNotNone(cur)
 	return (conn, cur)
 
 
-def create_star(t) -> dbznutz.Star:
-	return dbznutz.faker.bwl_star()
+def create_star(t) -> Star:
+	return db.faker.bwl_star()
 
 
 def drop_table(t, cur, tableName):

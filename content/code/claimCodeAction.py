@@ -1,10 +1,10 @@
-import dbznutz 
+from . import db
 
 starClaim = None
-(conn, cur) = dbznutz.connect()
+(conn, cur) = db.connect()
 claimCode = http.args['claimCode'].strip() # pyright: ignore[reportUndefinedVariable]
 with conn:
-    starClaims = dbznutz.StarClaim.get_by_claim_code(cur, claimCode)
+    starClaims = db.StarClaim.get_by_claim_code(cur, claimCode)
 if not starClaims:
     http.redirect('/claimCode-noRows') # pyright: ignore[reportUndefinedVariable]
 elif len(starClaims) > 1:
