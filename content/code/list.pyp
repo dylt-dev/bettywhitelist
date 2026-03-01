@@ -1,6 +1,7 @@
 {% extends 'layout.pyp' %}
 {% block title %}The List{% endblock title %}
 {% block content %}
+	<div>db_dir={{ db_dir }}</div>
 	{% if d|length == 0: %}
 	<p id='beFirst'>It looks like no one has been added to the list yet.<br><p><a href='https://www.bettywhitelist.com'>Be First!</a></p>
 	{% else %}

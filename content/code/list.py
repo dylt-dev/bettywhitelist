@@ -1,10 +1,14 @@
 from datetime import datetime
-import dbznutz 
+import sys
+import db
+from db.StarClaim import StarClaim
+db_dir = dir(db)
+sys_path = sys.path
 
 d = []
-(conn, cur) = dbznutz.connect()
+(conn, cur) = db.connect()
 with conn:
-    starClaims = dbznutz.get_star_claims(cur)
+    starClaims = StarClaim.get_all(cur)
 for starClaim in starClaims:
     o = {}
     o['idStar'] = starClaim.idStar

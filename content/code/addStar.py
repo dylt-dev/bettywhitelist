@@ -1,7 +1,6 @@
 from datetime import datetime
-import dbznutz 
-
 import urllib.parse
+from . import db
 
 # driver = pyodbc.drivers()[-1]
 # host='db.bettywhitelist.com'
@@ -18,13 +17,13 @@ import urllib.parse
 # conn.close()
 
 name = http.args['name'] # type: ignore
-token = dbznutz.create_token()
+token = db.create_token()
 createdOn = datetime.now()
-star = dbznutz.Star(name, token, createdOn)
+star = db.Star(name, token, createdOn)
 
-(conn, cur) = dbznutz.connect()
+(conn, cur) = db.connect()
 with conn:
-    dbznutz.add_star(cur, star)
+    db.add_star(cur, star)
 
 # scheme=http.env['wsgi.url_scheme']
 # host=http.env["HTTP_HOST"]

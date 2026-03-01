@@ -1,7 +1,7 @@
-import dbznutz 
+from . import db
 
 idStar = http.args['id'] # pyright: ignore[reportUndefinedVariable]
 
-(conn, cur) = dbznutz.connect()
+(conn, cur) = db.connect()
 with conn:
-    starClaim = dbznutz.get_star_claim(cur, idStar)
+    starClaim = db.Star.get()
