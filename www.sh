@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 
-export SPLUNGE_TEMPLATE_FOLDER='./code'
+export SPLUNGE_TEMPLATE_FOLDER='./mycode'
+export SPLUNGE_CODEFOLDER='./mycode'
 
 main ()
 {

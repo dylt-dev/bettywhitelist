@@ -168,6 +168,12 @@ table.object-detail {
 	gap: 3rem;
 }
 
+.star-token {
+	color: purple;
+	font-family: monospace;
+	font-size: 0.7rem;
+}
+
 input[type='checkbox']:checked ~ .errorDetail {
 	visibility: visible;
 }
