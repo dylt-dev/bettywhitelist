@@ -56,6 +56,13 @@ class Tests(unittest.TestCase):
 	def test_star(self):
 		test_get(self, "/star?id=1", contentType="text/html; charset=utf-8")
 
+	def test_list_has_sun(self):
+		# issue: 4-run-elsewhere
+		cli = werkzeug.Client(app.app)
+		resp = cli.get("/list")
+		self.assertEqual("200", resp.status.split()[0])
+		self.assertIn("🌞", resp.text)
+
 def test_get(t: unittest.TestCase, url: str, *, contentType=None):
 	cli = werkzeug.Client(app.app)
 	resp: werkzeug.Response = cli.get(url)
