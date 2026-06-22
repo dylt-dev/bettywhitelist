@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 import urllib.parse
 from . import db
 
@@ -21,7 +22,10 @@ token = db.create_token()
 createdOn = datetime.now()
 star = db.Star(name, token, createdOn)
 
-(conn, cur) = db.connect()
+db_path = os.getenv("DB_PATH")
+if not db_path:
+    raise Exception("DB_PATH not set")
+(conn, cur) = db.connect(db_path)
 with conn:
     db.add_star(cur, star)
 

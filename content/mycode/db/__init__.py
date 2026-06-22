@@ -4,14 +4,29 @@ import sqlite3
 import sys
 from .Star import Star
 
-_BASEDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-_DB_DIR = os.path.join(_BASEDIR, 'db')
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS "claim" (
+                                id INTEGER PRIMARY KEY,
+                                id_star INTEGER,
+                                email varchar(200),
+                                created_on DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                FOREIGN KEY(id_star) REFERENCES star(id)
+);
+CREATE TABLE IF NOT EXISTS "star" (
+                                id INTEGER PRIMARY KEY,
+                                name varchar(200) unique,
+                                token varchar(200),
+                                created_on DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE VIEW v_star_claim as select star.id as id_star, claim.id as id_claim, star.name, star.token, claim.email, star.created_on as star_created_on, claim.created_on as claim_created_on from star left join claim on claim.id_star=star.id
+/* v_star_claim(id_star,id_claim,name,token,email,star_created_on,claim_created_on) */;
+"""
 
-def connect():
-	os.makedirs(_DB_DIR, exist_ok=True)
-	conn = sqlite3.connect(os.path.join(_DB_DIR, 'bwl.db'))
+
+def connect(path):
+	conn = sqlite3.connect(path)
 	if not conn:
-		return (None, None)
+		raise Exception(f"Unable to connect to database at {path}")
 	cur = conn.cursor()
 	return (conn, cur)
 

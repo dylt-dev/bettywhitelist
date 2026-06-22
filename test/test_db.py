@@ -1,20 +1,31 @@
+import os
 import sqlite3
+import tempfile
 import unittest
 import sys
 sys.path.insert(0, 'content/mycode')
 from content.mycode import db
 from content.mycode.db.Star import Star
 from content.mycode.db.StarClaim import StarClaim
+from . import util
+
+_DB_DIR = tempfile.TemporaryDirectory("bettywhitelist", "test")
+_DB_PATH = os.path.join(_DB_DIR.name, 'bwl.db')
 
 class Tests(unittest.TestCase):
+
+	@classmethod
+	def setUpClass(cls):
+		cls.db_path = util.init_db()
+
 	def test_connect(self):
-		(conn, cur) = db.connect()
+		(conn, cur) = connect(self)
 		self.assertIsNotNone(conn)
 		self.assertIsNotNone(cur)
 
 	def test_get_star(self):
 		idStar = 6
-		(conn, cur) = db.connect()
+		(conn, cur) = connect(self)
 		with conn:
 			star = Star.get(cur, idStar)
 			self.assertIsNotNone(star)
@@ -29,9 +40,9 @@ class Tests(unittest.TestCase):
 		self.assertEqual(nRows, len(rows))
 
 	def test_get_star_claims_by_claim_code(self):
-		claimCode = "bazooka-override-apostle-suction"
+		claimCode = "override-apostle-suction-bazooka"
 		idStar = 6
-		(conn, cur) = db.connect()
+		(conn, cur) = connect(self)
 		with conn:
 			starClaims = StarClaim.get_by_claim_code(cur, claimCode)
 		self.assertIsNotNone(starClaims)
@@ -42,7 +53,7 @@ class Tests(unittest.TestCase):
 
 	def test_get_star_claims_by_star(self):
 		idStar = 6
-		(conn, cur) = db.connect()
+		(conn, cur) = connect(self)
 		with conn:
 			starClaims = StarClaim.get_by_star(cur, idStar)
 		self.assertIsNotNone(starClaims)
@@ -61,11 +72,12 @@ class Tests(unittest.TestCase):
 
 	# Not a test
 	def add_star(self):
-		(conn, cur) = connect()
-		star = create_star(self)
+		(conn, cur) = connect(self)
 		with conn:
-			db.add_star(cur, star)
-		self.assertEqual(1, cur.rowcount)
+			rows = Star.get_all(cur)
+			nRows = get_row_count(self, cur, 'star')
+		self.assertIsNotNone(rows)
+		self.assertEqual(nRows, len(rows))
 
 	# Not a test
 	def create_claim_table(self):
@@ -137,7 +149,6 @@ class Tests(unittest.TestCase):
 
 	# Not a test
 	def get_star_count(self):
-		print()
 		(conn, cur) = connect(self)
 		with conn:
 			n = Star.get_count(cur)
@@ -155,16 +166,15 @@ class Tests(unittest.TestCase):
 	# Not a test
 	def list_stars(self):
 		print()
-		(conn, cur) = connect()
+		(conn, cur) = connect(self)
 		with conn:
 			rows = Star.get_all(cur)
 		for row in rows:
 			print(row)
 			
 
-
 def connect(t):
-	(conn, cur) = db.connect()
+	(conn, cur) = db.connect(t.db_path)
 	t.assertIsNotNone(conn)
 	t.assertIsNotNone(cur)
 	return (conn, cur)
