@@ -1,11 +1,15 @@
 from datetime import datetime
+import os
 import sqlite3
 import sys
 from .Star import Star
-# sys.path.append('/Users/chris/src/bettywhitelist/content/code/db')
+
+_BASEDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+_DB_DIR = os.path.join(_BASEDIR, 'db')
 
 def connect():
-	conn = sqlite3.connect('/Users/chris/src/bettywhitelist/db/bwl.db')
+	os.makedirs(_DB_DIR, exist_ok=True)
+	conn = sqlite3.connect(os.path.join(_DB_DIR, 'bwl.db'))
 	if not conn:
 		return (None, None)
 	cur = conn.cursor()

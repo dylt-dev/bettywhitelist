@@ -20,7 +20,7 @@
     <br><p>
     <a href='https://www.bettywhitelist.com'>Come back and add others</a> any time.
     <br><p>
-    Or visit <a href='/code/list'>the list</a>.
+    Or visit <a href='/list'>the list</a>.
     <br><p>
     Have an excellent day!
     <br><p>

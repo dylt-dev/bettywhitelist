@@ -1,8 +1,10 @@
 import sqlite3
 import unittest
-from content.code import db
-from content.code.db.Star import Star
-from content.code.db.StarClaim import StarClaim
+import sys
+sys.path.insert(0, 'content/mycode')
+from content.mycode import db
+from content.mycode.db.Star import Star
+from content.mycode.db.StarClaim import StarClaim
 
 class Tests(unittest.TestCase):
 	def test_connect(self):
