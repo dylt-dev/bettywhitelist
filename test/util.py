@@ -15,6 +15,7 @@ def init_db():
     DB_DIR = tempfile.mkdtemp(prefix="bettywhitelist.", suffix=".test")
     DB_PATH = os.path.join(DB_DIR, 'bwl.db')
     print(DB_PATH)
+    os.environ('DB_PATH') = DB_PATH
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.executescript(db.SCHEMA)
