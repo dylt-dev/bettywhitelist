@@ -36,6 +36,9 @@ FROM star LEFT JOIN claim ON claim.id_star = star.id;
 class Tests(unittest.TestCase):
 	@classmethod
 	def setUpClass(cls):
+		# chdir to the content folder so URL paths work
+		os.chdir('./content')
+		# create & populate a new tmp database and return the path
 		cls.db_path = util.init_db()
 
 	def test_list(self):
