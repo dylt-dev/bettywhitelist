@@ -24,6 +24,7 @@ There are a number of steps involved in going from "works on my computer" to "Ma
 - Create an nginx proxy that tunnels HTTP traffic to the host
 - Add a proper FQDN in DNS
 - Setup certbot to get a proper cert and accept HTTPS traffic
+- Install Shr to automate updates
 
 If all this happens inside an Incus container on a VPS host, some steps will be required to proxy HTTP/S traffic through the VPS host and into the container. It might be desirable to do cert creation + management on the host as well, as this simplifies the app dev who probably doesn't care about certbot details. It'd be good to support both options.
 
@@ -44,3 +45,5 @@ Rough idea of steps and confirmation
 - Add a proper FQDN in DNS - test via dig
 
 - Setup certbot to get a proper cert and accept HTTPS traffic - same, just change your tests to use https
+
+- Install SHR to get updates: ???
