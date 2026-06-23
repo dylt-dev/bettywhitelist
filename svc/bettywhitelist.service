@@ -1,0 +1,15 @@
+[Unit]
+Description=bettywhitelist
+After=network.target
+
+[Service]
+Type=exec
+User=rayray
+WorkingDirectory=/opt/svc/bettywhitelist
+EnvironmentFile=/opt/svc/bettywhitelist/svc/env
+ExecStart=/opt/svc/bettywhitelist/svc/run.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

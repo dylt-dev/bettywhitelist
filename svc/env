@@ -1,0 +1,3 @@
+SPLUNGE_CODEFOLDER=./mycode
+SPLUNGE_TEMPLATE_FOLDER=./mycode
+DB_PATH=/opt/svc/bettywhitelist/db/bwl.db
