@@ -1,8 +1,8 @@
 import os
+
 os.environ["SPLUNGE_CODEFOLDER"] = "./mycode"
 os.environ["SPLUNGE_TEMPLATE_FOLDER"] = "./mycode"
 
-import os
 import sqlite3
 import tempfile
 import unittest
@@ -12,34 +12,18 @@ from content.mycode import db
 from . import util
 
 
-_SCHEMA_SQL = """
-CREATE TABLE IF NOT EXISTS "star" (
-	id INTEGER PRIMARY KEY,
-	name varchar(200) unique,
-	token varchar(200),
-	created_on DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-CREATE TABLE IF NOT EXISTS "claim" (
-	id INTEGER PRIMARY KEY,
-	id_star INTEGER,
-	email varchar(200),
-	created_on DATETIME DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY(id_star) REFERENCES star(id)
-);
-CREATE VIEW IF NOT EXISTS v_star_claim AS
-SELECT star.id AS id_star, claim.id AS id_claim, star.name,
-	   star.token, claim.email, star.created_on AS star_created_on,
-	   claim.created_on AS claim_created_on
-FROM star LEFT JOIN claim ON claim.id_star = star.id;
-"""
-
 class Tests(unittest.TestCase):
 	@classmethod
 	def setUpClass(cls):
+		cls._orig_cwd = os.getcwd()
 		# chdir to the content folder so URL paths work
 		os.chdir('./content')
 		# create & populate a new tmp database and return the path
 		cls.db_path = util.init_db()
+
+	@classmethod
+	def tearDownClass(cls):
+		os.chdir(cls._orig_cwd)
 
 	def test_list(self):
 		test_get(self, "/list", contentType="text/html; charset=utf-8")
