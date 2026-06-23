@@ -1,0 +1,47 @@
+name: Nightly release
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        description: 'Optional label (e.g. fix-oauth-timeout)'
+        required: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Generate tag and asset name
+        id: tag
+        run: |
+          DATE=$(date +'%Y-%m-%d')
+          TS=$(date +'%H%M%S')
+          LABEL="${{ inputs.label || '' }}"
+          LABEL="${LABEL//[^a-zA-Z0-9._-]/}"
+          TAG="nightly-${DATE}${LABEL:+-${LABEL}}"
+          curl -sf -o /dev/null "https://api.github.com/repos/${{ github.repository }}/git/ref/tags/${TAG}" \
+            && TAG="${TAG}-${TS}"
+          echo "TAG=$TAG" >> "$GITHUB_OUTPUT"
+      - run: make -C svc package
+      - run: cp /tmp/bettywhitelist.tar.gz /tmp/bettywhitelist-${{ steps.tag.outputs.TAG }}.tar.gz
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV=$(git tag --sort=-creatordate | head -2 | tail -1 || true)
+          {
+            echo "## What's Changed"
+            echo ""
+            if [ -n "$PREV" ]; then
+              git log --oneline --no-merges "$PREV"..HEAD \
+                | while read -r line; do echo "- $line"; done
+            else
+              echo "Initial nightly release"
+            fi
+          } > /tmp/changelog.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.TAG }}
+          target_commitish: main
+          files: /tmp/bettywhitelist-${{ steps.tag.outputs.TAG }}.tar.gz
+          body_path: /tmp/changelog.txt
