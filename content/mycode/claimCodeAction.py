@@ -1,7 +1,11 @@
+import os
 from . import db
 
 starClaim = None
-(conn, cur) = db.connect()
+db_path = os.getenv("DB_PATH")
+if not db_path:
+    raise Exception("DB_PATH not set")
+(conn, cur) = db.connect(db_path)
 claimCode = http.args['claimCode'].strip() # pyright: ignore[reportUndefinedVariable]
 with conn:
     starClaims = db.StarClaim.get_by_claim_code(cur, claimCode)

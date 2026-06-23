@@ -5,9 +5,9 @@
 The </b>Betty White List</b> is the list of stars that we most want to make it to the end of 2020! <b>Betty White</b> is #1 on that list, obviously,
 but there are plenty more.
 <br><p>
-Check out <a href='/code/list'>the list</a>, and if your star is not already on the list then you get to get first! If they <em>are</em> already on, we're working on
+Check out <a href='/list'>the list</a>, and if your star is not already on the list then you get to get first! If they <em>are</em> already on, we're working on
 how to add your support, so check back!
-<form method='post' action='/code/addStar'>
+<form method='post' action='/addStar'>
 	<b>Please add</b> <input name='name' placeholder='(name of star)'> <input type='submit' value='+'/>
 </form>
 <br><p>

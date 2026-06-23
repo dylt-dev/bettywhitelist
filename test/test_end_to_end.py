@@ -1,37 +1,67 @@
 import os
+
+os.environ["SPLUNGE_CODEFOLDER"] = "./mycode"
+os.environ["SPLUNGE_TEMPLATE_FOLDER"] = "./mycode"
+
+import sqlite3
+import tempfile
 import unittest
 import werkzeug
 from splunge import app
+from content.mycode import db
+from . import util
 
 
 class Tests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        os.chdir('./content')
+	@classmethod
+	def setUpClass(cls):
+		cls._orig_cwd = os.getcwd()
+		# chdir to the content folder so URL paths work
+		os.chdir('./content')
+		# create & populate a new tmp database and return the path
+		cls.db_path = util.init_db()
 
-    def test_code_list(self):
-        test_get(self, "/code/list", contentType="text/html")
+	@classmethod
+	def tearDownClass(cls):
+		os.chdir(cls._orig_cwd)
 
-    def test_code_thankyou(self):
-        test_get(self, "/code/thankyou?name=fakename&token=faketoken", contentType="text/html")
+	def test_list(self):
+		test_get(self, "/list", contentType="text/html; charset=utf-8")
 
-    def test_index_html(self):
-        test_get(self, "/index.html", contentType="text/html")
+	def test_thankyou(self):
+		test_get(self, "/thankyou?name=fakename&token=faketoken", contentType="text/html; charset=utf-8")
 
-    def test_nowwhat_md(self):
-        test_get(self, "/now-what.md", contentType="text/markdown")
+	def test_index_html(self):
+		test_get(self, "/index.html", contentType="text/html")
 
-    def test_star(self):
-        test_get(self, "/code/star?id=1", contentType="text/markdown")
+	def test_nowwhat_md(self):
+		test_get(self, "/now-what.md", contentType="text/html; charset=utf-8")
+
+	def test_star(self):
+		test_get(self, "/star?id=1", contentType="text/html; charset=utf-8")
+
+	def test_list_has_sun(self):
+		# issue: 4-run-elsewhere
+		cli = werkzeug.Client(app.app)
+		resp = cli.get("/list")
+		self.assertEqual("200", resp.status.split()[0])
+		self.assertIn("🌞", resp.text)
 
 def test_get(t: unittest.TestCase, url: str, *, contentType=None):
-    cli = werkzeug.Client(app.app)
-    resp: werkzeug.Response = cli.get(url)
-    statusCode, sep, statusMessage = resp.status.partition(' ')
-    t.assertEqual(str(200), statusCode)
-    if statusMessage:
-        t.assertEqual('OK', statusMessage.upper())
-    print(f'resp.text={resp.text}')
-    print(f'resp.content_type={resp.content_type}')
-    if contentType:
-        t.assertEqual(contentType, resp.content_type)  
+	cli = werkzeug.Client(app.app)
+	resp: werkzeug.Response = cli.get(url)
+	statusCode, sep, statusMessage = resp.status.partition(' ')
+	t.assertEqual(str(200), statusCode)
+	if statusMessage:
+		t.assertEqual('OK', statusMessage.upper())
+	print(f'resp.text={resp.text}')
+	print(f'resp.content_type={resp.content_type}')
+	if contentType:
+		t.assertEqual(contentType, resp.content_type)  
+
+def connect(t):
+	(conn, cur) = db.connect(t.db_path)
+	t.assertIsNotNone(conn)
+	t.assertIsNotNone(cur)
+	return (conn, cur)
+

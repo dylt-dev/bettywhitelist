@@ -18,5 +18,6 @@
             </ul>
         </header>
         {% block content %}{% endblock %}
+        <span class='rayray'>🌞</span>
     </body>
 </html>
