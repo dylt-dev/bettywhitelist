@@ -1,4 +1,4 @@
-SRC_FOLDER = ..
+SRC_FOLDER = .
 SVC_ROOT = /opt/svc/bettywhitelist
 TARBALL = /tmp/bettywhitelist.tar
 TARBALLZ = $(TARBALL).gz
@@ -19,8 +19,8 @@ init:
 package:
 	tar $(EXCLUDE) -C $(SRC_FOLDER) -cf $(TARBALL) --exclude svc/bettywhitelist.service \
 	  content/ requirements.txt db/bwl.db svc 
-	tar $(EXCLUDE) --append -f $(TARBALL) \
-	  bettywhitelist.service
+	tar $(EXCLUDE) -C $(SRC_FOLDER)/svc --append -f $(TARBALL) \
+	  svc/bettywhitelist.service
 	gzip --force $(TARBALL)
 
 deploy:
