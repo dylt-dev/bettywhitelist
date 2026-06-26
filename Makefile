@@ -30,7 +30,7 @@ package: stage
 	tar $(EXCLUDE) -C $(STAGING) -czf $(TARBALLZ) .
 
 changelog:
-	prev=$$(git tag --sort=-creatordate | head -2 | tail -1 || true); \
+	@prev=$$(git tag --sort=-creatordate | head -2 | tail -1 || true); \
 	echo "## What's Changed"; \
 	echo ""; \
 	if [ -n "$$prev" ]; then \
