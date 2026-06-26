@@ -11,22 +11,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: make -C svc package
+      - run: make package
       - run: cp /tmp/bettywhitelist.tar.gz /tmp/bettywhitelist-${{ github.ref_name }}.tar.gz
-      - name: Generate changelog
-        id: changelog
-        run: |
-          PREV=$(git tag --sort=-creatordate | head -2 | tail -1 || true)
-          {
-            echo "## What's Changed"
-            echo ""
-            if [ -n "$PREV" ]; then
-              git log --oneline --no-merges "$PREV"..HEAD \
-                | while read -r line; do echo "- $line"; done
-            else
-              echo "Initial release"
-            fi
-          } > /tmp/changelog.txt
+      - run: make changelog > /tmp/changelog.txt
       - uses: softprops/action-gh-release@v2
         with:
           files: /tmp/bettywhitelist-${{ github.ref_name }}.tar.gz

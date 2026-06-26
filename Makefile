@@ -1,7 +1,7 @@
 SRC_FOLDER = .
 SVC_ROOT = /opt/svc/bettywhitelist
-TARBALL = /tmp/bettywhitelist.tar
-TARBALLZ = $(TARBALL).gz
+TARBALLZ = /tmp/bettywhitelist.tar.gz
+STAGING = /tmp/staging
 EXCLUDE = --exclude='.git' --exclude='venv' --exclude='__pycache__' \
           --exclude='test' --exclude='tools' --exclude='*.pyc'
 
@@ -16,12 +16,29 @@ init:
 	mkdir -p $(SVC_ROOT)/svc
 	chown -R rayray:rayray $(SVC_ROOT)
 
-package:
-	tar $(EXCLUDE) -C $(SRC_FOLDER) -cf $(TARBALL) --exclude svc/bettywhitelist.service \
-	  content/ requirements.txt db/bwl.db svc 
-	tar $(EXCLUDE) -C $(SRC_FOLDER)/svc --append -f $(TARBALL) \
-	  svc/bettywhitelist.service
-	gzip --force $(TARBALL)
+stage:
+	mkdir -p $(STAGING)
+	find $(STAGING) -mindepth 1 -delete
+	cp -r content/ $(STAGING)/
+	cp -r db/ $(STAGING)/
+	cp requirements.txt $(STAGING)/
+	mkdir -p $(STAGING)/svc
+	cp svc/run.sh svc/env $(STAGING)/svc/
+	cp svc/bettywhitelist.service $(STAGING)/
+
+package: stage
+	tar $(EXCLUDE) -C $(STAGING) -czf $(TARBALLZ) .
+
+changelog:
+	prev=$$(git tag --sort=-creatordate | head -2 | tail -1 || true); \
+	echo "## What's Changed"; \
+	echo ""; \
+	if [ -n "$$prev" ]; then \
+	  git log --oneline --no-merges "$$prev"..HEAD \
+	    | while read -r line; do echo "- $$line"; done; \
+	else \
+	  echo "${INITIAL_MESSAGE:-Initial release}"; \
+	fi
 
 deploy:
 	tar -xzf $(TARBALLZ) -C $(SVC_ROOT)
@@ -44,4 +61,5 @@ all: init package deploy venv enable test
 
 .DEFAULT_GOAL := test
 
-.PHONY: init package deploy venv enable test all
+.PHONY: all changelog clean deploy enable init package stage test venv
+	

@@ -25,22 +25,9 @@ jobs:
           curl -sf -o /dev/null "https://api.github.com/repos/${{ github.repository }}/git/ref/tags/${TAG}" \
             && TAG="${TAG}-${TS}"
           echo "TAG=$TAG" >> "$GITHUB_OUTPUT"
-      - run: make -C svc package
+      - run: make package
       - run: cp /tmp/bettywhitelist.tar.gz /tmp/bettywhitelist-${{ steps.tag.outputs.TAG }}.tar.gz
-      - name: Generate changelog
-        id: changelog
-        run: |
-          PREV=$(git tag --sort=-creatordate | head -2 | tail -1 || true)
-          {
-            echo "## What's Changed"
-            echo ""
-            if [ -n "$PREV" ]; then
-              git log --oneline --no-merges "$PREV"..HEAD \
-                | while read -r line; do echo "- $line"; done
-            else
-              echo "Initial nightly release"
-            fi
-          } > /tmp/changelog.txt
+      - run: make changelog INITIAL_MESSAGE="Initial nightly release" > /tmp/changelog.txt
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.TAG }}
