@@ -30,6 +30,7 @@ jobs:
       - run: make changelog INITIAL_MESSAGE="Initial nightly release" > /tmp/changelog.txt
       - uses: softprops/action-gh-release@v2
         with:
+          prerelease: true
           tag_name: ${{ steps.tag.outputs.TAG }}
           target_commitish: main
           files: /tmp/bettywhitelist-${{ steps.tag.outputs.TAG }}.tar.gz
