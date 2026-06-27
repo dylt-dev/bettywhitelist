@@ -26,6 +26,16 @@ stage:
 	cp svc/run.sh svc/env $(STAGING)/svc/
 	cp svc/bettywhitelist.service $(STAGING)/
 
+stage-release:
+	mkdir -p /tmp/bettywhitelist.latest/extracted
+	find /tmp/bettywhitelist.latest/extracted -mindepth 1 -delete
+	cp -r content/ /tmp/bettywhitelist.latest/extracted/
+	cp -r db/ /tmp/bettywhitelist.latest/extracted/
+	cp requirements.txt /tmp/bettywhitelist.latest/extracted/
+	mkdir -p /tmp/bettywhitelist.latest/extracted/svc
+	cp svc/run.sh svc/env /tmp/bettywhitelist.latest/extracted/svc/
+	cp svc/bettywhitelist.service /tmp/bettywhitelist.latest/extracted/
+
 package: stage
 	tar $(EXCLUDE) -C $(STAGING) -czf $(TARBALLZ) .
 
@@ -72,7 +82,9 @@ test:
 
 all: init fetch deploy venv enable test
 
+locals-only: init stage-release deploy venv enable test
+
 .DEFAULT_GOAL := test
 
-.PHONY: all changelog clean deploy enable fetch init package prune stage test venv
+.PHONY: all changelog clean deploy enable fetch init locals-only package prune stage stage-release test venv
 	
