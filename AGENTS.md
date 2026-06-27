@@ -1,3 +1,8 @@
+### calling daylight functions
+
+daylight.sh functions are available by 'case dispatch', eg daylight.sh helloworld vs source daylight.sh && helloworld. Favor case dispatch instead of source + func call. It keeps the session clean. Sourcing the script is best for interactive use, when calling functions explicitly is convenient, esp w autocomplete
+
+
 #### db/bwl.db in source control
 
 Having live data in source control can be problematic, but it's useful to have a substantially populated bwl.db in github. In part this is to address something OpenCode did, when it decided to add a tearDown which deleted the database, which was the only example of how the database ought to look. This would not have been a problem, except it wasn't in source control, so it *was* a problem. The ./db/bwl/db file should never represent actual production data, which would live on a server in a separate path, receive backup and other TLC, etc.

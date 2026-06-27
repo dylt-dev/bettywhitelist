@@ -40,11 +40,24 @@ changelog:
 	  echo "${INITIAL_MESSAGE:-Initial release}"; \
 	fi
 
+fetch:
+	dl_path=$$(/opt/bin/daylight.sh github-release-download-latest --verify --extract \
+	  --extract-name extracted dylt-dev bettywhitelist) && \
+	  ln -sfn "$$(dirname "$$dl_path")" /tmp/bettywhitelist.latest
+
 deploy:
-	tar -xzf $(TARBALLZ) -C $(SVC_ROOT)
+	@if [ -d $(SVC_ROOT) ]; then \
+		mv $(SVC_ROOT) $(SVC_ROOT).old.$$(date +%Y%m%d%H%M%S); \
+	fi
+	mkdir -p $(SVC_ROOT)
+	cp -r /tmp/bettywhitelist.latest/extracted/* $(SVC_ROOT)/
 	ln -sf $(SVC_ROOT)/bettywhitelist.service /etc/systemd/system/
 	systemctl daemon-reload
+	systemctl restart bettywhitelist
 	chown -R rayray:rayray $(SVC_ROOT)
+
+prune:
+	rm -rf $(SVC_ROOT).old.* /tmp/bettywhitelist.release.* /tmp/bettywhitelist.latest
 
 venv:
 	python3 -m venv $(SVC_ROOT)/venv
@@ -57,9 +70,9 @@ enable:
 test:
 	curl --location -v --unix-socket $(SVC_ROOT)/bettywhitelist.sock http:/index.html || { echo "test failed"; exit 1; }
 
-all: init package deploy venv enable test
+all: init fetch deploy venv enable test
 
 .DEFAULT_GOAL := test
 
-.PHONY: all changelog clean deploy enable init package stage test venv
+.PHONY: all changelog clean deploy enable fetch init package prune stage test venv
 	
