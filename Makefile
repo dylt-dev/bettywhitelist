@@ -5,8 +5,39 @@ STAGING = /tmp/staging
 EXCLUDE = --exclude='.git' --exclude='venv' --exclude='__pycache__' \
           --exclude='test' --exclude='tools' --exclude='*.pyc'
 
+changelog:
+	@prev=$$(git tag --sort=-creatordate | head -2 | tail -1 || true); \
+	echo "## What's Changed"; \
+	echo ""; \
+	if [ -n "$$prev" ]; then \
+	  git log --oneline --no-merges "$$prev"..HEAD \
+	    | while read -r line; do echo "- $$line"; done; \
+	else \
+	  echo "${INITIAL_MESSAGE:-Initial release}"; \
+	fi
+
 clean:
 	rm -r $(SVC_ROOT)
+
+deploy:
+	@if [ -d $(SVC_ROOT) ]; then \
+		mv $(SVC_ROOT) $(SVC_ROOT).old.$$(date +%Y%m%d%H%M%S); \
+	fi
+	mkdir -p $(SVC_ROOT)
+	cp -r /tmp/bettywhitelist.latest/extracted/* $(SVC_ROOT)/
+	ln -sf $(SVC_ROOT)/bettywhitelist.service /etc/systemd/system/
+	chown -R rayray:rayray $(SVC_ROOT)
+	python3 -m venv $(SVC_ROOT)/venv
+	$(SVC_ROOT)/venv/bin/pip install -r $(SVC_ROOT)/requirements.txt
+	chown -R rayray:rayray $(SVC_ROOT)
+	systemctl daemon-reload
+
+enable:
+
+fetch:
+	dl_path=$$(/opt/bin/daylight.sh github-release-download-latest --verify --extract \
+	  --extract-name extracted dylt-dev bettywhitelist) && \
+	  ln -sfn "$$(dirname "$$dl_path")" /tmp/bettywhitelist.latest
 
 init:
 	mkdir -p $(SVC_ROOT)/content
@@ -15,6 +46,16 @@ init:
 	mkdir -p $(SVC_ROOT)/venv
 	mkdir -p $(SVC_ROOT)/svc
 	chown -R rayray:rayray $(SVC_ROOT)
+
+package: stage
+	tar $(EXCLUDE) -C $(STAGING) -czf $(TARBALLZ) .
+
+prune:
+	rm -rf $(SVC_ROOT).old.* /tmp/bettywhitelist.release.* /tmp/bettywhitelist.latest
+
+run:
+	systemctl enable --now bettywhitelist
+	systemctl restart bettywhitelist
 
 stage:
 	mkdir -p $(STAGING)
@@ -36,55 +77,17 @@ stage-release:
 	cp svc/run.sh svc/env /tmp/bettywhitelist.latest/extracted/svc/
 	cp svc/bettywhitelist.service /tmp/bettywhitelist.latest/extracted/
 
-package: stage
-	tar $(EXCLUDE) -C $(STAGING) -czf $(TARBALLZ) .
-
-changelog:
-	@prev=$$(git tag --sort=-creatordate | head -2 | tail -1 || true); \
-	echo "## What's Changed"; \
-	echo ""; \
-	if [ -n "$$prev" ]; then \
-	  git log --oneline --no-merges "$$prev"..HEAD \
-	    | while read -r line; do echo "- $$line"; done; \
-	else \
-	  echo "${INITIAL_MESSAGE:-Initial release}"; \
-	fi
-
-fetch:
-	dl_path=$$(/opt/bin/daylight.sh github-release-download-latest --verify --extract \
-	  --extract-name extracted dylt-dev bettywhitelist) && \
-	  ln -sfn "$$(dirname "$$dl_path")" /tmp/bettywhitelist.latest
-
-deploy:
-	@if [ -d $(SVC_ROOT) ]; then \
-		mv $(SVC_ROOT) $(SVC_ROOT).old.$$(date +%Y%m%d%H%M%S); \
-	fi
-	mkdir -p $(SVC_ROOT)
-	cp -r /tmp/bettywhitelist.latest/extracted/* $(SVC_ROOT)/
-	ln -sf $(SVC_ROOT)/bettywhitelist.service /etc/systemd/system/
-	systemctl daemon-reload
-	systemctl restart bettywhitelist
-	chown -R rayray:rayray $(SVC_ROOT)
-
-prune:
-	rm -rf $(SVC_ROOT).old.* /tmp/bettywhitelist.release.* /tmp/bettywhitelist.latest
-
-venv:
-	python3 -m venv $(SVC_ROOT)/venv
-	$(SVC_ROOT)/venv/bin/pip install -r $(SVC_ROOT)/requirements.txt
-	chown -R rayray:rayray $(SVC_ROOT)
-
-enable:
-	systemctl enable --now bettywhitelist
 
 test:
 	curl --location -v --unix-socket $(SVC_ROOT)/bettywhitelist.sock http:/index.html || { echo "test failed"; exit 1; }
 
-all: init fetch deploy venv enable test
+venv:
 
-locals-only: init stage-release deploy venv enable test
+all: init fetch deploy run test
+
+locals-only: init stage-release deploy run test
 
 .DEFAULT_GOAL := test
 
-.PHONY: all changelog clean deploy enable fetch init locals-only package prune stage stage-release test venv
+.PHONY: all changelog clean deploy fetch init locals-only package prune run stage stage-release test
 	
