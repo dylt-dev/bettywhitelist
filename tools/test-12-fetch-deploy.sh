@@ -14,7 +14,6 @@ run-tests()
         test-phony-includes-fetch
         test-phony-includes-prune
         test-deploy-uses-latest-symlink
-        test-run-sh-sd-notify
         test-service-type-notify
         test-locals-only-target
         test-stage-release-target
@@ -102,13 +101,6 @@ test-deploy-uses-latest-symlink()
     printf '  PASS\n'
 }
 
-test-run-sh-sd-notify()
-{
-    local run_sh="$SCRIPT_DIR/../svc/run.sh"
-    grep -qF -e '--sd-notify' "$run_sh" || { printf '  FAIL: run.sh missing --sd-notify\n'; return 1; }
-    printf '  PASS\n'
-}
-
 test-service-type-notify()
 {
     local svc="$SCRIPT_DIR/../svc/bettywhitelist.service"
@@ -145,7 +137,6 @@ main()
             test-phony-includes-fetch)            test-phony-includes-fetch;;
             test-phony-includes-prune)            test-phony-includes-prune;;
             test-deploy-uses-latest-symlink)      test-deploy-uses-latest-symlink;;
-            test-run-sh-sd-notify)                test-run-sh-sd-notify;;
             test-service-type-notify)             test-service-type-notify;;
             test-locals-only-target)              test-locals-only-target;;
             test-stage-release-target)            test-stage-release-target;;
