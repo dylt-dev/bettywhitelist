@@ -3,7 +3,8 @@ Description=bettywhitelist
 After=network.target
 
 [Service]
-Type=exec
+Type=notify
+TimeoutStartSec=30
 User=rayray
 WorkingDirectory=/opt/svc/bettywhitelist
 EnvironmentFile=/opt/svc/bettywhitelist/svc/env
