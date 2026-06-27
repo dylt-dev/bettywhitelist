@@ -14,6 +14,8 @@ run-tests()
         test-phony-includes-fetch
         test-phony-includes-prune
         test-deploy-uses-latest-symlink
+        test-run-sh-sd-notify
+        test-service-type-notify
     )
     local total=0 passed=0 failed=0
     for t in "${tests[@]}"; do
@@ -98,6 +100,21 @@ test-deploy-uses-latest-symlink()
     printf '  PASS\n'
 }
 
+test-run-sh-sd-notify()
+{
+    local run_sh="$SCRIPT_DIR/../svc/run.sh"
+    grep -qF -e '--sd-notify' "$run_sh" || { printf '  FAIL: run.sh missing --sd-notify\n'; return 1; }
+    printf '  PASS\n'
+}
+
+test-service-type-notify()
+{
+    local svc="$SCRIPT_DIR/../svc/bettywhitelist.service"
+    grep -qP '^Type=notify\b' "$svc" || { printf '  FAIL: service file not Type=notify\n'; return 1; }
+    grep -qP '^TimeoutStartSec=' "$svc" || { printf '  FAIL: service file missing TimeoutStartSec\n'; return 1; }
+    printf '  PASS\n'
+}
+
 main()
 {
     if (( $# >= 1 )); then
@@ -112,6 +129,8 @@ main()
             test-phony-includes-fetch)            test-phony-includes-fetch;;
             test-phony-includes-prune)            test-phony-includes-prune;;
             test-deploy-uses-latest-symlink)      test-deploy-uses-latest-symlink;;
+            test-run-sh-sd-notify)                test-run-sh-sd-notify;;
+            test-service-type-notify)             test-service-type-notify;;
             *)                                    printf 'Unknown test: %s\n' "$cmd" >&2; exit 1;;
         esac
     else
