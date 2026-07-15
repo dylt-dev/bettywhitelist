@@ -12,57 +12,33 @@ command -v gunicorn >/dev/null || {
 WWW=$(printf '%s' "$PROJECT_DIR/../splunge/scripts/www")
 [[ -f "$WWW" ]] || { printf 'www not found\n' >&2; exit 1; }
 
-
-cleanup()
-{
-    local pid=$1
-    kill "$pid" 2>/dev/null
-    timeout 5 wait "$pid" 2>/dev/null || kill -9 "$pid" 2>/dev/null
-}
-
-
-start_www()
-{
-    local port=$1
-    export DB_PATH="$PROJECT_DIR/db/bwl.db"
-    "$WWW" --port "$port" --code-folder "$PROJECT_DIR/content/mycode" \
-           --templates-folder "$PROJECT_DIR/content/mycode" > /dev/null 2>&1 &
-    local pid=$!
-    sleep 5
-    printf '%s' "$pid"
-}
-
-
-start_www_socket()
-{
-    local sock=$1
-    export DB_PATH="$PROJECT_DIR/db/bwl.db"
-    "$WWW" --socket "$sock" --code-folder "$PROJECT_DIR/content/mycode" \
-           --templates-folder "$PROJECT_DIR/content/mycode" > /dev/null 2>&1 &
-    local pid=$!
-    sleep 5
-    printf '%s' "$pid"
-}
+cd "$PROJECT_DIR" || exit 1
 
 
 test-serve-list-has-sun()
 {
-    local pid
-    pid=$(start_www 19871)
+    export DB_PATH="$PROJECT_DIR/db/bwl.db"
+    "$WWW" --graceful-timeout 1 --port 19871 --code-folder "$PROJECT_DIR/content/mycode" \
+           --templates-folder "$PROJECT_DIR/content/mycode" &
+    until curl -s -w '%{http_code}' --output /tmp/_bwl_poll.txt http://localhost:19871/list | grep -q '^[2-5]'; do sleep 1; done
+
     curl -s http://localhost:19871/list | grep 🌞
     local result=$?
-    cleanup "$pid"
+    local jp; jp=$(jobs -p); [[ -n "$jp" ]] && kill $jp; wait
     [[ "$result" -eq 0 ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
 }
 
 
 test-serve-list-200()
 {
-    local pid
-    pid=$(start_www 19872)
+    export DB_PATH="$PROJECT_DIR/db/bwl.db"
+    "$WWW" --graceful-timeout 1 --port 19872 --code-folder $PROJECT_DIR/content/mycode \
+           --templates-folder $PROJECT_DIR/content/mycode &
+    until curl -s -w '%{http_code}' --output /tmp/_bwl_poll.txt http://localhost:19872/list | grep -q '^[2-5]'; do sleep 1; done
+
     local code
-    code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:19872/list)
-    cleanup "$pid"
+    code=$(curl -s -w "%{http_code}" -o /tmp/_bwl_test_body.txt http://localhost:19872/list)
+    local jp; jp=$(jobs -p); [[ -n "$jp" ]] && kill $jp; wait
     [[ "$code" == "200" ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
 }
 
@@ -79,13 +55,16 @@ SPLUNGE_TEMPLATES_FOLDER=$PROJECT_DIR/content/mycode
 EOF
 
     export DB_PATH="$PROJECT_DIR/db/bwl.db"
-    "$WWW" > /dev/null 2>&1 &
-    local pid=$!
-    sleep 3
+    "$WWW" --graceful-timeout 1 &
+    local i
+    for i in {1..10}; do
+        [[ -S "$tmpDir/test-bwl.sock" ]] && curl -s --unix-socket "$tmpDir/test-bwl.sock" http://localhost/list 2>/dev/null && break
+        sleep 1
+    done
 
     curl -s --unix-socket "$tmpDir/test-bwl.sock" http://localhost/list | grep 🌞
     local result=$?
-    cleanup "$pid"
+    local jp; jp=$(jobs -p); [[ -n "$jp" ]] && kill $jp; wait
     popd >/dev/null
     [[ "$result" -eq 0 ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
 }
@@ -93,12 +72,15 @@ EOF
 
 test-serve-uds()
 {
+    export DB_PATH="$PROJECT_DIR/db/bwl.db"
     local sock="/tmp/bwl-test-$$.sock"
-    local pid
-    pid=$(start_www_socket "$sock")
+    "$WWW" --graceful-timeout 1 --socket "$sock" --code-folder $PROJECT_DIR/content/mycode \
+           --templates-folder $PROJECT_DIR/content/mycode &
+    until curl -s -w '%{http_code}' --output /tmp/_bwl_poll.txt --unix-socket "$sock" http://localhost/list | grep -q '^[2-5]'; do sleep 1; done
+
     local code
-    code=$(curl -s -o /dev/null -w "%{http_code}" --unix-socket "$sock" http://localhost/list)
-    cleanup "$pid"
+    code=$(curl -s -w "%{http_code}" -o /tmp/_bwl_test_body.txt --unix-socket "$sock" http://localhost/list)
+    local jp; jp=$(jobs -p); [[ -n "$jp" ]] && kill $jp; wait
     rm -f "$sock"
     [[ "$code" == "200" ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
 }
@@ -106,12 +88,16 @@ test-serve-uds()
 
 test-thankyou()
 {
-    local pid
-    pid=$(start_www 19873)
-    curl -s "http://localhost:19873/thankyou?name=test&token=fake" | grep 🌞
-    local result=$?
-    cleanup "$pid"
-    [[ "$result" -eq 0 ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
+    export DB_PATH="$PROJECT_DIR/db/bwl.db"
+    "$WWW" --graceful-timeout 1 --port 19873 --code-folder $PROJECT_DIR/content/mycode \
+           --templates-folder $PROJECT_DIR/content/mycode &
+    until curl -s -w '%{http_code}' --output /tmp/_bwl_poll.txt http://localhost:19873/list | grep -q '^[2-5]'; do sleep 1; done
+
+    local code
+    code=$(curl -s -w "%{http_code}" -o /tmp/_bwl_test_body.txt \
+        "http://localhost:19873/thankyou?name=test&token=fake")
+    local jp; jp=$(jobs -p); [[ -n "$jp" ]] && kill $jp; wait
+    [[ "$code" == "200" ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
 }
 
 
