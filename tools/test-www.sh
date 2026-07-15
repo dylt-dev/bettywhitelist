@@ -17,7 +17,7 @@ cleanup()
 {
     local pid=$1
     kill "$pid" 2>/dev/null
-    timeout 3 wait "$pid" 2>/dev/null || kill -9 "$pid" 2>/dev/null
+    timeout 5 wait "$pid" 2>/dev/null || kill -9 "$pid" 2>/dev/null
 }
 
 
@@ -25,10 +25,10 @@ start_www()
 {
     local port=$1
     export DB_PATH="$PROJECT_DIR/db/bwl.db"
-    "$WWW" --port "$port" --code-folder "$PROJECT_DIR/content" \
-           --templates-folder "$PROJECT_DIR/mycode" &
+    "$WWW" --port "$port" --code-folder "$PROJECT_DIR/content/mycode" \
+           --templates-folder "$PROJECT_DIR/content/mycode" > /dev/null 2>&1 &
     local pid=$!
-    sleep 3
+    sleep 5
     printf '%s' "$pid"
 }
 
@@ -37,10 +37,10 @@ start_www_socket()
 {
     local sock=$1
     export DB_PATH="$PROJECT_DIR/db/bwl.db"
-    "$WWW" --socket "$sock" --code-folder "$PROJECT_DIR/content" \
-           --templates-folder "$PROJECT_DIR/mycode" &
+    "$WWW" --socket "$sock" --code-folder "$PROJECT_DIR/content/mycode" \
+           --templates-folder "$PROJECT_DIR/content/mycode" > /dev/null 2>&1 &
     local pid=$!
-    sleep 3
+    sleep 5
     printf '%s' "$pid"
 }
 
@@ -74,12 +74,12 @@ test-config-splunge-env()
 
     cat > .splunge.env <<EOF
 SPLUNGE_SOCKET=$tmpDir/test-bwl.sock
-SPLUNGE_CODEFOLDER=$PROJECT_DIR/content
-SPLUNGE_TEMPLATES_FOLDER=$PROJECT_DIR/mycode
+SPLUNGE_CODEFOLDER=$PROJECT_DIR/content/mycode
+SPLUNGE_TEMPLATES_FOLDER=$PROJECT_DIR/content/mycode
 EOF
 
     export DB_PATH="$PROJECT_DIR/db/bwl.db"
-    "$WWW" &
+    "$WWW" > /dev/null 2>&1 &
     local pid=$!
     sleep 3
 

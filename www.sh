@@ -5,7 +5,7 @@ main ()
     export DB_PATH="$(pwd)/db/bwl.db"
     printf '$DB_PATH=%s\n' "$DB_PATH"
 
-    www --port 1313 --code-folder ./content --templates-folder ./mycode
+    www --port 1313 --code-folder ./content/mycode --templates-folder ./content/mycode
 }
 
 
