@@ -3,100 +3,115 @@
 SCRIPT_DIR=$(dirname "$(readlink -f "$BASH_SOURCE")")
 PROJECT_DIR="$SCRIPT_DIR/.."
 
-command -v bwrap >/dev/null || { printf 'bwrap not installed\n' >&2; exit 1; }
 command -v gunicorn >/dev/null || {
     printf 'gunicorn not found. Activate a venv with splunge and bettywhitelist installed:\n' >&2
     printf '  bash create-venv.sh && source venv/bin/activate\n' >&2
     exit 1
 }
 
-WWW=$(command -v www 2>/dev/null || printf '%s' "$PROJECT_DIR/../splunge/scripts/www")
+WWW=$(printf '%s' "$PROJECT_DIR/../splunge/scripts/www")
 [[ -f "$WWW" ]] || { printf 'www not found\n' >&2; exit 1; }
 
 
-# Pre-flight: check if network namespace + loopback is supported
-check_net_ns()
+cleanup()
 {
-    bwrap --unshare-net --cap-add all --bind / / --proc /proc \
-        bash -c 'ip link set lo up' 2>/dev/null
+    local pid=$1
+    kill "$pid" 2>/dev/null
+    timeout 3 wait "$pid" 2>/dev/null || kill -9 "$pid" 2>/dev/null
 }
 
 
-HAS_NET_NS=false
-check_net_ns && HAS_NET_NS=true
-
-
-ns()
+start_www()
 {
-    if ! $HAS_NET_NS; then
-        printf '  SKIP (no network namespace support)\n'
-        return 0
-    fi
-    bwrap --unshare-net --cap-add all --bind / / --proc /proc --dev /dev \
-        --chdir "$PROJECT_DIR" \
-        bash -e -o pipefail -c "$1"
+    local port=$1
+    export DB_PATH="$PROJECT_DIR/db/bwl.db"
+    "$WWW" --port "$port" --code-folder "$PROJECT_DIR/content" \
+           --templates-folder "$PROJECT_DIR/mycode" &
+    local pid=$!
+    sleep 3
+    printf '%s' "$pid"
+}
+
+
+start_www_socket()
+{
+    local sock=$1
+    export DB_PATH="$PROJECT_DIR/db/bwl.db"
+    "$WWW" --socket "$sock" --code-folder "$PROJECT_DIR/content" \
+           --templates-folder "$PROJECT_DIR/mycode" &
+    local pid=$!
+    sleep 3
+    printf '%s' "$pid"
 }
 
 
 test-serve-list-has-sun()
 {
-    ns '
-        [[ -f venv/bin/activate ]] && source venv/bin/activate
-        trap "kill 0" EXIT
-        www --port 80 --code-folder "$PWD/content" --templates-folder "$PWD/mycode" &
-        sleep 2
-        curl -s http://localhost/list | grep 🌞
-    ' && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
+    local pid
+    pid=$(start_www 19871)
+    curl -s http://localhost:19871/list | grep 🌞
+    local result=$?
+    cleanup "$pid"
+    [[ "$result" -eq 0 ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
 }
 
 
 test-serve-list-200()
 {
-    ns '
-        [[ -f venv/bin/activate ]] && source venv/bin/activate
-        trap "kill 0" EXIT
-        www --port 80 --code-folder "$PWD/content" --templates-folder "$PWD/mycode" &
-        sleep 2
-        code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/list)
-        [[ "$code" == "200" ]]
-    ' && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
+    local pid
+    pid=$(start_www 19872)
+    local code
+    code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:19872/list)
+    cleanup "$pid"
+    [[ "$code" == "200" ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
 }
 
 
 test-config-splunge-env()
 {
-    ns '
-        [[ -f venv/bin/activate ]] && source venv/bin/activate
-        trap "kill 0" EXIT
-        www &
-        sleep 2
-        curl -s http://localhost/list | grep 🌞
-    ' && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
+    local tmpDir; tmpDir=$(mktemp -d)
+    pushd "$tmpDir" >/dev/null || return 1
+
+    cat > .splunge.env <<EOF
+SPLUNGE_SOCKET=$tmpDir/test-bwl.sock
+SPLUNGE_CODEFOLDER=$PROJECT_DIR/content
+SPLUNGE_TEMPLATES_FOLDER=$PROJECT_DIR/mycode
+EOF
+
+    export DB_PATH="$PROJECT_DIR/db/bwl.db"
+    "$WWW" &
+    local pid=$!
+    sleep 3
+
+    curl -s --unix-socket "$tmpDir/test-bwl.sock" http://localhost/list | grep 🌞
+    local result=$?
+    cleanup "$pid"
+    popd >/dev/null
+    [[ "$result" -eq 0 ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
 }
 
 
 test-serve-uds()
 {
-    ns '
-        [[ -f venv/bin/activate ]] && source venv/bin/activate
-        trap "kill 0" EXIT
-        www --socket "$PWD/tmp/bwl-test.sock" --code-folder "$PWD/content" --templates-folder "$PWD/mycode" &
-        sleep 2
-        code=$(curl -s -o /dev/null -w "%{http_code}" --unix-socket "$PWD/tmp/bwl-test.sock" http://localhost/list)
-        [[ "$code" == "200" ]]
-    ' && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
+    local sock="/tmp/bwl-test-$$.sock"
+    local pid
+    pid=$(start_www_socket "$sock")
+    local code
+    code=$(curl -s -o /dev/null -w "%{http_code}" --unix-socket "$sock" http://localhost/list)
+    cleanup "$pid"
+    rm -f "$sock"
+    [[ "$code" == "200" ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
 }
 
 
 test-thankyou()
 {
-    ns '
-        [[ -f venv/bin/activate ]] && source venv/bin/activate
-        trap "kill 0" EXIT
-        www --port 80 --code-folder "$PWD/content" --templates-folder "$PWD/mycode" &
-        sleep 2
-        curl -s "http://localhost/thankyou?name=test&token=fake" | grep 🌞
-    ' && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
+    local pid
+    pid=$(start_www 19873)
+    curl -s "http://localhost:19873/thankyou?name=test&token=fake" | grep 🌞
+    local result=$?
+    cleanup "$pid"
+    [[ "$result" -eq 0 ]] && { printf '  PASS\n'; return 0; } || { printf '  FAIL\n'; return 1; }
 }
 
 
