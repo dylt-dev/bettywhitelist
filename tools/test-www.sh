@@ -19,7 +19,7 @@ test-serve-list-has-sun()
 {
     export DB_PATH="$PROJECT_DIR/db/bwl.db"
     "$WWW" --graceful-timeout 1 --port 19871 --code-folder "$PROJECT_DIR/content/mycode" \
-           --templates-folder "$PROJECT_DIR/content/mycode" &
+           --template-folder "$PROJECT_DIR/content/mycode" &
     until curl -s -w '%{http_code}' --output /tmp/_bwl_poll.txt http://localhost:19871/list | grep -q '^[2-5]'; do sleep 1; done
 
     curl -s http://localhost:19871/list | grep 🌞
@@ -33,7 +33,7 @@ test-serve-list-200()
 {
     export DB_PATH="$PROJECT_DIR/db/bwl.db"
     "$WWW" --graceful-timeout 1 --port 19872 --code-folder $PROJECT_DIR/content/mycode \
-           --templates-folder $PROJECT_DIR/content/mycode &
+           --template-folder $PROJECT_DIR/content/mycode &
     until curl -s -w '%{http_code}' --output /tmp/_bwl_poll.txt http://localhost:19872/list | grep -q '^[2-5]'; do sleep 1; done
 
     local code
@@ -51,7 +51,7 @@ test-config-splunge-env()
     cat > .splunge.env <<EOF
 SPLUNGE_SOCKET=$tmpDir/test-bwl.sock
 SPLUNGE_CODEFOLDER=$PROJECT_DIR/content/mycode
-SPLUNGE_TEMPLATES_FOLDER=$PROJECT_DIR/content/mycode
+SPLUNGE_TEMPLATE_FOLDER=$PROJECT_DIR/content/mycode
 EOF
 
     export DB_PATH="$PROJECT_DIR/db/bwl.db"
@@ -75,7 +75,7 @@ test-serve-uds()
     export DB_PATH="$PROJECT_DIR/db/bwl.db"
     local sock="/tmp/bwl-test-$$.sock"
     "$WWW" --graceful-timeout 1 --socket "$sock" --code-folder $PROJECT_DIR/content/mycode \
-           --templates-folder $PROJECT_DIR/content/mycode &
+           --template-folder $PROJECT_DIR/content/mycode &
     until curl -s -w '%{http_code}' --output /tmp/_bwl_poll.txt --unix-socket "$sock" http://localhost/list | grep -q '^[2-5]'; do sleep 1; done
 
     local code
@@ -90,7 +90,7 @@ test-thankyou()
 {
     export DB_PATH="$PROJECT_DIR/db/bwl.db"
     "$WWW" --graceful-timeout 1 --port 19873 --code-folder $PROJECT_DIR/content/mycode \
-           --templates-folder $PROJECT_DIR/content/mycode &
+           --template-folder $PROJECT_DIR/content/mycode &
     until curl -s -w '%{http_code}' --output /tmp/_bwl_poll.txt http://localhost:19873/list | grep -q '^[2-5]'; do sleep 1; done
 
     local code
